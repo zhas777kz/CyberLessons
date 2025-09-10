@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Истории в картинках — 6 карточек (RU/KZ)</title>
+  <style>
+    :root{--ink:#0f172a;--muted:#475569;--brand:#0ea5e9}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,Arial,sans-serif;background:#f6fbff;color:var(--ink)}
+    .wrap{max-width:960px;margin:0 auto;padding:16px}
+
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+    a.back{text-decoration:none;color:var(--brand);font-weight:800}
+    .brand{font-weight:900;font-size:20px}
+
+    /* Language switch */
+    .lang{display:flex;gap:6px}
+    .lang button{border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:6px 10px;font-weight:800;cursor:pointer}
+    .lang button.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+
+    .hero{text-align:center;margin:6px 0 18px}
+    .hero h1{margin:0;font-size:clamp(22px,5vw,30px);color:#0b3d91}
+    .hero p{margin:8px auto 0;color:var(--muted);max-width:640px;font-size:14px}
+
+    /* Простая сетка 3 сверху и 3 снизу */
+    .stories{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media(max-width:700px){.stories{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:480px){.stories{grid-template-columns:1fr}}
+
+    .card{background:#fff;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 3px 6px rgba(0,0,0,.05);overflow:hidden;transition:transform .15s ease}
+    .card:hover{transform:translateY(-3px)}
+
+    .thumb{width:100%;aspect-ratio:3/4;display:block;cursor:pointer;overflow:hidden;border:0;padding:0;background:transparent}
+    .thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s ease}
+    .card:hover .thumb img{transform:scale(1.05)}
+
+    .body{padding:8px}
+    .card h3{margin:0 0 2px;font-size:15px}
+    .card p{margin:0;color:#64748b;font-size:12px}
+
+    /* Лайтбокс */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;padding:16px;z-index:40}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:min(92vw,900px);max-height:85vh;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+    .lightbox .cap{color:#fff;margin-top:10px;text-align:center;font-size:14px}
+    .lightbox .close{position:absolute;top:18px;right:18px;background:#fff;border:none;border-radius:999px;padding:6px 12px;font-weight:900;cursor:pointer}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="back" href="./index.html">⬅ Главная</a>
+      <div class="brand">📖 Истории в картинках</div>
+      <div class="lang" role="group" aria-label="Переключение языка">
+        <button id="btnRU" class="active" data-lang="ru">Русский</button>
+        <button id="btnKZ" data-lang="kz">Қазақша</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1 id="hTitle">Выбери историю</h1>
+      <p id="hDesc">Нажми на обложку — комикс откроется крупно.</p>
+    </section>
+
+    <section class="stories" id="grid">
+      <!-- 1 Надёжные пароли / Қауіпсіз құпиясөздер -->
+      <article class="card" 
+        data-ru-title="Надёжные пароли" 
+        data-kz-title="Қауіпсіз құпиясөздер" 
+        data-ru-desc="Фраза + цифры = безопасно" 
+        data-kz-desc="Сөз тіркесі + цифрлар — қауіпсіз" 
+        data-ru-src="comic/ru/password-all.png" 
+        data-kz-src="comic/kz/password-all.png" 
+        data-ru-cap="Надёжные пароли — полный комикс" 
+        data-kz-cap="Қауіпсіз құпиясөздер — толық комикс">
+        <button class="thumb"><img alt="poster"/></button>
+        <div class="body"><h3 class="title"></h3><p class="desc"></p></div>
+      </article>
+      <!-- 2 Фишинг и мошенничество / Фишинг және алаяқтық -->
+      <article class="card" 
+        data-ru-title="Фишинг и мошенничество" 
+        data-kz-title="Фишинг және алаяқтық" 
+        data-ru-desc="Проверяй адрес ссылки" 
+        data-kz-desc="Сілтеме мекенжайын тексер" 
+        data-ru-src="comic/ru/phishing-all.png" 
+        data-kz-src="comic/kz/phishing-all.png" 
+        data-ru-cap="Фишинг и мошенничество — полный комикс" 
+        data-kz-cap="Фишинг және алаяқтық — толық комикс">
+        <button class="thumb"><img alt="poster"/></button>
+        <div class="body"><h3 class="title"></h3><p class="desc"></p></div>
+      </article>
+      <!-- 3 Личная информация / Жеке ақпарат -->
+      <article class="card" 
+        data-ru-title="Личная информация в сети" 
+        data-kz-title="Желідегі жеке ақпарат" 
+        data-ru-desc="Делись данными с умом" 
+        data-kz-desc="Деректерді ойланып бөліс" 
+        data-ru-src="comic/ru/privacy-all.png" 
+        data-kz-src="comic/kz/privacy-all.png" 
+        data-ru-cap="Личная информация в сети — полный комикс" 
+        data-kz-cap="Желідегі жеке ақпарат — толық комикс">
+        <button class="thumb"><img alt="poster"/></button>
+        <div class="body"><h3 class="title"></h3><p class="desc"></p></div>
+      </article>
+      <!-- 4 Опасные приложения и игры / Қауіпті қосымшалар мен ойындар -->
+      <article class="card" 
+        data-ru-title="Опасные приложения и игры" 
+        data-kz-title="Қауіпті қосымшалар мен ойындар" 
+        data-ru-desc="Скачивай только проверенные" 
+        data-kz-desc="Тек тексерілгендерін жүкте" 
+        data-ru-src="comic/ru/apps-all.png" 
+        data-kz-src="comic/kz/apps-all.png" 
+        data-ru-cap="Опасные приложения и игры — полный комикс" 
+        data-kz-cap="Қауіпті қосымшалар мен ойындар — толық комикс">
+        <button class="thumb"><img alt="poster"/></button>
+        <div class="body"><h3 class="title"></h3><p class="desc"></p></div>
+      </article>
+      <!-- 5 Кибербуллинг / Кибербуллинг -->
+      <article class="card" 
+        data-ru-title="Кибербуллинг" 
+        data-kz-title="Кибербуллинг" 
+        data-ru-desc="Будь добрым в сети" 
+        data-kz-desc="Желіде мейірімді бол" 
+        data-ru-src="comic/ru/bullying-all.png" 
+        data-kz-src="comic/kz/bullying-all.png" 
+        data-ru-cap="Кибербуллинг — полный комикс" 
+        data-kz-cap="Кибербуллинг — толық комикс">
+        <button class="thumb"><img alt="poster"/></button>
+        <div class="body"><h3 class="title"></h3><p class="desc"></p></div>
+      </article>
+      <!-- 6 Здоровье и время / Денсаулық және экран уақыты -->
+      <article class="card" 
+        data-ru-title="Здоровье и время за компьютером" 
+        data-kz-title="Денсаулық және экран уақыты" 
+        data-ru-desc="Делай перерывы" 
+        data-kz-desc="Үзіліс жаса" 
+        data-ru-src="comic/ru/health-all.png" 
+        data-kz-src="comic/kz/health-all.png" 
+        data-ru-cap="Здоровье и время за компьютером — полный комикс" 
+        data-kz-cap="Денсаулық және экран уақыты — толық комикс">
+        <button class="thumb"><img alt="poster"/></button>
+        <div class="body"><h3 class="title"></h3><p class="desc"></p></div>
+      </article>
+    </section>
+  </div>
+
+  <!-- Лайтбокс -->
+  <div class="lightbox" id="lightbox">
+    <button class="close" id="lbClose">✕</button>
+    <div style="text-align:center">
+      <img id="lbImg" alt="Просмотр изображения" />
+      <div class="cap" id="lbCap"></div>
+    </div>
+  </div>
+
+<script>
+  // --- Локализация заголовка страницы ---
+  const i18n = {
+    ru: { title: 'Выбери историю', desc: 'Нажми на обложку — комикс откроется крупно.' },
+    kz: { title: 'Әңгімені таңда', desc: 'Мұқабаны бас — комикс үлкен болып ашылады.' }
+  };
+
+  const hTitle = document.getElementById('hTitle');
+  const hDesc  = document.getElementById('hDesc');
+  const btnRU = document.getElementById('btnRU');
+  const btnKZ = document.getElementById('btnKZ');
+  let lang = localStorage.getItem('lang') || 'ru';
+
+  function applyLang(){
+    // Заголовки
+    hTitle.textContent = i18n[lang].title; 
+    hDesc.textContent  = i18n[lang].desc;
+    // Кнопки
+    btnRU.classList.toggle('active', lang==='ru');
+    btnKZ.classList.toggle('active', lang==='kz');
+    // Карточки
+    document.querySelectorAll('.card').forEach(card=>{
+      const title = card.querySelector('.title');
+      const desc  = card.querySelector('.desc');
+      const img   = card.querySelector('img');
+      const thumb = card.querySelector('.thumb');
+      img.src = card.dataset[lang+'Src'];
+      title.textContent = card.dataset[lang+'Title'];
+      desc.textContent  = card.dataset[lang+'Desc'];
+      thumb.dataset.full = card.dataset[lang+'Src'];
+      thumb.dataset.cap  = card.dataset[lang+'Cap'];
+    });
+  }
+
+  function setLang(l){ lang=l; localStorage.setItem('lang', l); applyLang(); }
+  btnRU.onclick = ()=> setLang('ru');
+  btnKZ.onclick = ()=> setLang('kz');
+  applyLang();
+
+  // --- Лайтбокс ---
+  const thumbs=document.querySelectorAll('.thumb');
+  const lb=document.getElementById('lightbox');
+  const lbImg=document.getElementById('lbImg');
+  const lbCap=document.getElementById('lbCap');
+  const lbClose=document.getElementById('lbClose');
+
+  thumbs.forEach(t=>{
+    t.addEventListener('click',()=>{
+      lbImg.src=t.dataset.full||t.querySelector('img').src;
+      lbCap.textContent=t.dataset.cap||'';
+      lb.classList.add('open');
+    });
+  });
+  lbClose.onclick=()=>lb.classList.remove('open');
+  lb.addEventListener('click',e=>{ if(e.target===lb) lb.classList.remove('open'); });
+  window.addEventListener('keydown',e=>{ if(e.key==='Escape') lb.classList.remove('open'); });
+</script>
+</body>
+</html>
