@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Возьми с собой — советы в PDF (RU/KZ)</title>
+  <style>
+    :root{
+      --ink:#0f172a; --muted:#475569; --brand:#0ea5e9; --card:#ffffff; --line:#e2e8f0;
+      --radius:14px; --shadow:0 6px 16px rgba(15,23,42,.06);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;background:#f6fbff;color:var(--ink)}
+
+    .wrap{max-width:1000px;margin:0 auto;padding:20px}
+
+    header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}
+    a.back{text-decoration:none;color:var(--brand);font-weight:800}
+    .brand{font-weight:900;font-size:20px;letter-spacing:.2px}
+
+    /* язык */
+    .lang{display:flex;gap:8px}
+    .lang button{
+      border:1px solid var(--line); background:#fff; border-radius:999px;
+      padding:7px 12px; font-weight:800; cursor:pointer; transition:.15s ease;
+    }
+    .lang button.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    .lang button:focus-visible{outline:3px solid rgba(14,165,233,.35); outline-offset:2px}
+
+    /* хиро */
+    .hero{text-align:center;margin:8px 0 22px}
+    .hero h1{margin:0;font-size:clamp(22px,4.8vw,30px);color:#0b3d91;letter-spacing:.2px}
+    .hero p{margin:10px auto 0;color:var(--muted);max-width:640px;font-size:14px}
+
+    /* сетка */
+    .cards{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      align-items:stretch; /* тянем все карточки по высоте */
+    }
+    @media(max-width:820px){.cards{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:520px){.cards{grid-template-columns:1fr}}
+
+    /* карточка одинаковой высоты */
+    .card{
+      display:flex; flex-direction:column;
+      background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:14px; min-height:220px;
+      transition:transform .14s ease, box-shadow .14s ease;
+    }
+    .card:hover{transform:translateY(-2px); box-shadow:0 10px 24px rgba(15,23,42,.08)}
+
+    .title{display:flex; gap:10px; align-items:center; font-weight:900; font-size:16px; margin-bottom:6px}
+    .ico{width:24px; height:24px; display:inline-grid; place-items:center; font-size:18px}
+    .t{line-height:1.15}
+
+    .desc{color:#64748b; font-size:13px; margin:0 0 10px}
+    /* фиксированная высота описания, чтобы ряды были ровные даже при разной длине текста */
+    .desc{min-height:40px; display:flex; align-items:flex-start}
+
+    .spacer{flex:1} /* толкатель, чтобы кнопка была у низа */
+
+    .btnrow{display:flex; justify-content:center}
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      width:100%; max-width:260px;
+      padding:10px 14px; border-radius:12px; border:1px solid var(--brand);
+      background:var(--brand); color:#fff; text-decoration:none; font-weight:800;
+      cursor:pointer; transition:filter .12s ease, transform .12s ease;
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn:active{transform:translateY(1px)}
+    .btn:focus-visible{outline:3px solid rgba(14,165,233,.35); outline-offset:2px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a class="back" href="./index.html">⬅ Главная</a>
+      <div class="brand" id="brand">📦 Возьми с собой</div>
+      <div class="lang" role="group" aria-label="Переключение языка">
+        <button id="btnRU" class="active" data-lang="ru">Русский</button>
+        <button id="btnKZ" data-lang="kz">Қазақша</button>
+      </div>
+    </header>
+
+    <section class="hero">
+      <h1 id="hTitle">Скачай памятки и распечатай</h1>
+      <p id="hDesc">Короткие советы по кибербезопасности.</p>
+    </section>
+
+    <section class="cards">
+      <!-- 1 Пароли -->
+      <article class="card"
+        data-ru-title="Надёжные пароли" data-kz-title="Қауіпсіз құпиясөздер"
+        data-ru-desc="Как придумать сильный пароль и не забыть его." data-kz-desc="Күшті құпиясөзді қалай ойлап табу және оны ұмытпау."
+        data-ru="passwordsru.pdf" data-kz="passwordskz.pdf">
+        <div class="title"><span class="ico">🔑</span><span class="t"></span></div>
+        <p class="desc d"></p>
+        <div class="spacer"></div>
+        <div class="btnrow"><button class="btn dl">Скачать PDF (RU)</button></div>
+      </article>
+
+      <!-- 2 Фишинг -->
+      <article class="card"
+        data-ru-title="Фишинг и мошенничество" data-kz-title="Фишинг және алаяқтық"
+        data-ru-desc="Как распознать поддельные письма и ссылки." data-kz-desc="Жалған хаттар мен сілтемелерді қалай тану."
+        data-ru="phishingru.pdf" data-kz="phishingkz.pdf">
+        <div class="title"><span class="ico">🕵️</span><span class="t"></span></div>
+        <p class="desc d"></p>
+        <div class="spacer"></div>
+        <div class="btnrow"><button class="btn dl">Скачать PDF (RU)</button></div>
+      </article>
+
+      <!-- 3 Личные данные -->
+      <article class="card"
+        data-ru-title="Личная информация в сети" data-kz-title="Желідегі жеке ақпарат"
+        data-ru-desc="Что можно публиковать, а что — нет." data-kz-desc="Нені жариялауға болады, нені — болмайды."
+        data-ru="privacyru.pdf" data-kz="privacykz.pdf">
+        <div class="title"><span class="ico">🛡️</span><span class="t"></span></div>
+        <p class="desc d"></p>
+        <div class="spacer"></div>
+        <div class="btnrow"><button class="btn dl">Скачать PDF (RU)</button></div>
+      </article>
+
+      <!-- 4 Приложения и игры -->
+      <article class="card"
+        data-ru-title="Опасные приложения и игры" data-kz-title="Қауіпті қосымшалар мен ойындар"
+        data-ru-desc="Как скачивать безопасно и не тратить лишнее." data-kz-desc="Қолданбаларды қауіпсіз жүктеу және артық шығын жасамау."
+        data-ru="appsru.pdf" data-kz="appskz.pdf">
+        <div class="title"><span class="ico">📱</span><span class="t"></span></div>
+        <p class="desc d"></p>
+        <div class="spacer"></div>
+        <div class="btnrow"><button class="btn dl">Скачать PDF (RU)</button></div>
+      </article>
+
+      <!-- 5 Кибербуллинг -->
+      <article class="card"
+        data-ru-title="Кибербуллинг" data-kz-title="Кибербуллинг"
+        data-ru-desc="Как реагировать и где искать помощь." data-kz-desc="Қалай әрекет ету және қайдан көмек сұрау."
+        data-ru="bullyingru.pdf" data-kz="bullyingkz.pdf">
+        <div class="title"><span class="ico">💬</span><span class="t"></span></div>
+        <p class="desc d"></p>
+        <div class="spacer"></div>
+        <div class="btnrow"><button class="btn dl">Скачать PDF (RU)</button></div>
+      </article>
+
+      <!-- 6 Здоровье и время -->
+      <article class="card"
+        data-ru-title="Здоровье и время за компьютером" data-kz-title="Денсаулық және экран уақыты"
+        data-ru-desc="Перерывы, осанка и зарядка для глаз." data-kz-desc="Үзілістер, дене қалпы және көзге арналған жаттығу."
+        data-ru="healthru.pdf" data-kz="healthkz.pdf">
+        <div class="title"><span class="ico">⏱️</span><span class="t"></span></div>
+        <p class="desc d"></p>
+        <div class="spacer"></div>
+        <div class="btnrow"><button class="btn dl">Скачать PDF (RU)</button></div>
+      </article>
+    </section>
+  </div>
+
+<script>
+  const i18n = {
+    ru:{brand:'📦 Возьми с собой',title:'Скачай памятки и распечатай',
+        desc:'Короткие советы по кибербезопасности.',
+        download:'Скачать PDF (RU)'},
+    kz:{brand:'📦 Өзіңмен ал',title:'Парақшаларды жүктеп, басып шығар',
+        desc:'Киберқауіпсіздік бойынша қысқа кеңестер.',
+        download:'PDF жүктеу (KZ)'}
+  };
+
+  let lang = localStorage.getItem('lang') || 'ru';
+  const brand=document.getElementById('brand'),
+        hTitle=document.getElementById('hTitle'),
+        hDesc=document.getElementById('hDesc'),
+        btnRU=document.getElementById('btnRU'),
+        btnKZ=document.getElementById('btnKZ');
+
+  function applyLang(){
+    brand.textContent=i18n[lang].brand;
+    hTitle.textContent=i18n[lang].title;
+    hDesc.textContent=i18n[lang].desc;
+    btnRU.classList.toggle('active',lang==='ru');
+    btnKZ.classList.toggle('active',lang==='kz');
+
+    document.querySelectorAll('.card').forEach(card=>{
+      const title=card.querySelector('.t');
+      const desc=card.querySelector('.d');
+      const dlBtn=card.querySelector('.dl');
+
+      title.textContent=card.dataset[lang+'Title'];
+      desc.textContent=card.dataset[lang+'Desc'];
+
+      dlBtn.textContent=i18n[lang].download;
+      dlBtn.onclick=()=>{ window.open(card.dataset[lang], '_blank'); };
+    });
+  }
+
+  function setLang(l){ lang=l; localStorage.setItem('lang', l); applyLang(); }
+  btnRU.onclick=()=> setLang('ru');
+  btnKZ.onclick=()=> setLang('kz');
+
+  applyLang();
+</script>
+</body>
+</html>

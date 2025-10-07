@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Играй и учись — обновлённые игры</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#475569; --brand:#0ea5e9; --ok:#16a34a; --bad:#dc2626;
+    --card:#ffffff; --line:#e2e8f0; --shadow:0 8px 22px rgba(15,23,42,.08); --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f6fbff;color:var(--ink)}
+  .wrap{max-width:1000px;margin:0 auto;padding:18px}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:8px}
+  a.back{text-decoration:none;color:#0ea5e9;font-weight:800}
+  .brand{font-weight:900}
+  .lang{display:flex;gap:8px}
+  .lang button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-weight:800;cursor:pointer}
+  .lang button.active{background:#0ea5e9;color:#fff;border-color:#0ea5e9}
+  .hero{text-align:center;margin:8px 0 16px}
+  .hero h1{margin:0 0 6px;color:#0b3d91;font-size:clamp(22px,4.8vw,30px)}
+  .hero p{margin:0;color:#475569}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media(max-width:840px){.grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:560px){.grid{grid-template-columns:1fr}}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px;display:flex;flex-direction:column;gap:8px}
+  .card h3{margin:0;font-size:18px}
+  .card p{margin:0;color:#64748b}
+  .btn{align-self:center;border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
+
+  /* modal */
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+  .modal.open{display:flex}
+  .box{background:#fff;max-width:920px;width:100%;border-radius:16px;box-shadow:var(--shadow);border:1px solid var(--line);padding:14px}
+  .box header{display:flex;justify-content:space-between;align-items:center;margin:0 0 10px}
+  .box header h2{margin:0;font-size:18px}
+  .close{border:none;background:#f1f5f9;border-radius:10px;padding:6px 10px;cursor:pointer;font-weight:800}
+  .hint{color:#475569;margin:6px 0 0}
+  .good{color:#166534;background:#d1fae5;border-color:#16a34a}
+
+  /* Игра 1: Слова из букв */
+  .anag{display:flex;flex-direction:column;gap:10px}
+  .letters{display:flex;gap:8px;flex-wrap:wrap}
+  .letter{min-width:38px;height:38px;display:grid;place-items:center;border:1px solid #94a3b8;border-radius:10px;background:#fff;cursor:grab;font-weight:900}
+  .slots{display:flex;gap:8px}
+  .slot{min-width:38px;height:38px;border:2px dashed #93c5fd;border-radius:10px;display:grid;place-items:center;background:#fff}
+  .controls{display:flex;gap:8px}
+  .anag .btn.secondary{background:#fff;color:#0f172a;border-color:#94a3b8}
+
+  /* Игра 2: Угадывание слов (вставляй буквы) */
+  .guess{display:flex;flex-direction:column;gap:10px}
+  .word{display:flex;gap:6px;justify-content:center}
+  .cell{width:38px;height:42px;border:1px solid #cbd5e1;border-radius:10px;display:grid;place-items:center;background:#fff;font-weight:900;font-size:18px}
+  .guess .btn.secondary{background:#fff;color:#0f172a;border-color:#94a3b8}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+  /* Игра 3: Конструктор пароля (ручной ввод) */
+  .builder{display:grid;grid-template-columns:1fr;gap:14px}
+  .pane{background:#f8fbff;border:1px solid #e2e8f0;border-radius:12px;padding:12px}
+  .field{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+  .mono{flex:1;font-family:ui-monospace,SFMono-Regular,Consolas,Menlo,monospace;background:#fff;border:1px solid #cbd5e1;border-radius:10px;padding:10px;font-weight:800}
+  .toggle{border:1px solid #cbd5e1;background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;font-weight:800}
+  .meter{height:14px;background:#e2e8f0;border-radius:999px;overflow:hidden}
+  .meter>div{height:100%;width:0;background:linear-gradient(90deg,#ef4444,#f59e0b,#22c55e)}
+
+  /* Игра 4: Секретное слово (бывш. виселица) */
+  .hang{display:flex;flex-direction:column;gap:10px}
+  .hang .board{display:flex;gap:8px;justify-content:center}
+  .hang .cell{width:40px;height:46px;border:1px solid #cbd5e1;border-radius:10px;display:grid;place-items:center;background:#fff;font-size:20px;font-weight:900}
+  .alpha{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}
+  .alpha button{padding:8px;border:1px solid #cbd5e1;background:#fff;border-radius:8px;cursor:pointer}
+  .alpha button:disabled{opacity:.4;cursor:not-allowed}
+  .hang .stat{font-weight:800;color:#0b3d91}
+
+  /* Игра 5: Пазл 3×3 с картинкой */
+  .puzzle{display:grid;grid-template-columns:repeat(3,110px);grid-template-rows:repeat(3,110px);gap:6px;justify-content:center}
+  .tile{border-radius:12px;cursor:pointer;position:relative;overflow:hidden;border:1px solid #cbd5e1;background-size:330px 330px;background-repeat:no-repeat}
+  .empty{background:none;border:2px dashed #cbd5e1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./index.html">⬅ Главная</a>
+    <div class="brand" id="brand">🎮 Играй и учись</div>
+    <div class="lang" role="group" aria-label="Переключение языка">
+      <button id="btnRU" class="active">Русский</button>
+      <button id="btnKZ">Қазақша</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 id="hTitle">Мини-игры по кибербезопасности</h1>
+    <p id="hDesc">Выбирай игру, играй и учись! Всё просто и понятно.</p>
+  </section>
+
+  <section class="grid">
+    <article class="card">
+      <h3 id="g1t">Слова из букв</h3>
+      <p id="g1d">Собери слово, перетаскивая буквы.</p>
+      <button class="btn" data-open="#modal1" id="g1b">Играть</button>
+    </article>
+    <article class="card">
+      <h3 id="g2t">Угадывание слов</h3>
+      <p id="g2d">Угадай слово по подсказке.</p>
+      <button class="btn" data-open="#modal2" id="g2b">Играть</button>
+    </article>
+    <article class="card">
+      <h3 id="g3t">Конструктор пароля</h3>
+      <p id="g3d">Введи пароль и узнай его силу.</p>
+      <button class="btn" data-open="#modal3" id="g3b">Играть</button>
+    </article>
+    <article class="card">
+      <h3 id="g4t">Секретное слово</h3>
+      <p id="g4d">Отгадай слово: мало ошибок!</p>
+      <button class="btn" data-open="#modal4" id="g4b">Играть</button>
+    </article>
+    <article class="card">
+      <h3 id="g5t">Пазл 3×3</h3>
+      <p id="g5d">Собери картинку-замок.</p>
+      <button class="btn" data-open="#modal5" id="g5b">Играть</button>
+    </article>
+  </section>
+</div>
+
+<!-- MODAL 1: Слова из букв -->
+<div class="modal" id="modal1"><div class="box">
+  <header><h2 id="m1t">Слова из букв</h2><button class="close" data-close>✕</button></header>
+  <div class="game anag">
+    <div class="row"><strong id="m1wordname">Слово:</strong><span id="m1target"></span></div>
+    <div class="letters" id="letters"></div>
+    <div class="slots" id="slots"></div>
+    <div class="controls">
+      <button class="btn secondary" id="nextAnag">Другое слово</button>
+      <button class="btn" id="checkAnag">Проверить</button>
+    </div>
+    <p class="hint" id="m1hint">Перетащи буквы по местам.</p>
+  </div>
+</div></div>
+
+<!-- MODAL 2: Угадывание слов -->
+<div class="modal" id="modal2"><div class="box">
+  <header><h2 id="m2t">Угадывание слов</h2><button class="close" data-close>✕</button></header>
+  <div class="game guess">
+    <div class="row"><strong id="m2clueTitle">Подсказка:</strong><span id="m2clue"></span></div>
+    <div class="word" id="m2cells"></div>
+    <div class="row">
+      <input id="m2input" maxlength="1" style="width:46px;height:42px;border:1px solid #cbd5e1;border-radius:10px;text-align:center;font-size:18px;font-weight:900" placeholder="А">
+      <button class="btn" id="m2try">Вставить букву</button>
+      <button class="btn secondary" id="m2next">Следующее слово</button>
+    </div>
+    <div class="row"><span class="hint" id="m2hint">Вводи буквы одну за другой.</span></div>
+  </div>
+</div></div>
+
+<!-- MODAL 3: Конструктор пароля (ручной ввод) -->
+<div class="modal" id="modal3"><div class="box">
+  <header><h2 id="m3t">Конструктор пароля</h2><button class="close" data-close>✕</button></header>
+  <div class="game builder">
+    <div class="pane">
+      <div class="field" style="flex-wrap:wrap">
+        <input type="password" id="pwd" class="mono" placeholder="Введи пароль тут">
+        <button class="toggle" id="eye">Показать</button>
+        <button class="toggle" id="copyBtn">Копировать</button>
+      </div>
+      <p class="hint" id="m3rules">Подсказка появится ниже, когда начнёшь вводить пароль.</p>
+    </div>
+    <div class="pane">
+      <div class="field" style="flex-direction:column;align-items:stretch">
+        <div style="display:flex;justify-content:space-between"><b id="strTitle">Надёжность</b><span id="strText">—</span></div>
+        <div class="meter"><div id="meter"></div></div>
+      </div>
+      <p class="hint" id="m3hint">Советы: —</p>
+    </div>
+  </div>
+</div></div>
+
+<!-- MODAL 4: Секретное слово -->
+<div class="modal" id="modal4"><div class="box">
+  <header><h2 id="m4t">Секретное слово</h2><button class="close" data-close>✕</button></header>
+  <div class="game hang">
+    <div class="board" id="hCells"></div>
+    <div class="stat" id="hStat">Ошибок: 0 / 6</div>
+    <div class="alpha" id="hAlpha"></div>
+    <div class="row"><button class="btn" id="hNext">Новое слово</button></div>
+  </div>
+</div></div>
+
+<!-- MODAL 5: Пазл 3×3 с картинкой -->
+<div class="modal" id="modal5"><div class="box">
+  <header><h2 id="m5t">Пазл 3×3</h2><button class="close" data-close>✕</button></header>
+  <div class="game">
+    <div class="puzzle" id="puzzle"></div>
+    <p class="hint" id="m5hint">Передвигай плитки, чтобы собрать картинку.</p>
+    <div class="row"><button class="btn" id="pzShuffle">Перемешать</button></div>
+  </div>
+</div></div>
+
+<script>
+/* ====== Путь к картинке для пазла (замени на свою, напр. 'img/lock.png') ====== */
+const PUZZLE_IMG = 'lock.png';
+
+/* ---------- ЛОКАЛИЗАЦИЯ ---------- */
+const L = {
+  ru:{
+    brand:"🎮 Играй и учись", title:"Мини-игры по кибербезопасности", desc:"Выбирай игру, играй и учись! Всё просто и понятно.",
+    g1t:"Слова из букв", g1d:"Собери слово, перетаскивая буквы.", g1b:"Играть",
+    g2t:"Угадывание слов", g2d:"Угадай слово по подсказке.", g2b:"Играть",
+    g3t:"Конструктор пароля", g3d:"Введи пароль и узнай его силу.", g3b:"Играть",
+    g4t:"Секретное слово", g4d:"Отгадай слово: мало ошибок!", g4b:"Играть",
+    g5t:"Пазл 3×3", g5d:"Собери картинку-замок.", g5b:"Играть",
+    m1t:"Слова из букв", m1hint:"Перетащи буквы по местам.", m1word:"Слово:", next:"Другое слово", check:"Проверить",
+    m2t:"Угадывание слов", clue:"Подсказка:", m2hint:"Вводи буквы одну за другой.", try:"Вставить букву", nextWord:"Следующее слово",
+    m3t:"Конструктор пароля", strength:"Надёжность", show:"Показать", hide:"Скрыть", copy:"Копировать",
+    weak:"Слабый", mid:"Средний", strong:"Сильный", startTip:"Подсказка появится ниже, когда начнёшь вводить пароль.",
+    tipsOK:"Отлично! Пароль сильный.",
+    m4t:"Секретное слово", errors:(x)=>`Ошибок: ${x} / 6`, newWord:"Новое слово",
+    m5t:"Пазл 3×3", pzhint:"Передвигай плитки, чтобы собрать картинку.", shuffle:"Перемешать",
+    okAll:"Отлично!"
+  },
+  kz:{
+    brand:"🎮 Ойна да білім ал", title:"Киберқауіпсіздікке арналған мини-ойындар", desc:"Ойынды таңда, ойна да үйрен!",
+    g1t:"Әріптерден сөз", g1d:"Әріптерді сүйреп, сөз құрастыр.", g1b:"Ойнау",
+    g2t:"Сөзді тап", g2d:"Кеңес бойынша сөзді тап.", g2b:"Ойнау",
+    g3t:"Құпиясөз құрастырушы", g3d:"Құпиясөзіңді енгіз де күшін біл.", g3b:"Ойнау",
+    g4t:"Жасырын сөз", g4d:"Сөзді тап: қателер аз болсын!", g4b:"Ойнау",
+    g5t:"Пазл 3×3", g5d:"Суретті құрастыр.", g5b:"Ойнау",
+    m1t:"Әріптерден сөз", m1hint:"Әріптерді орнына апар.", m1word:"Сөз:", next:"Келесі сөз", check:"Тексеру",
+    m2t:"Сөзді тап", clue:"Кеңес:", m2hint:"Әріптерді біртіндеп енгіз.", try:"Әріпті қою", nextWord:"Келесі сөз",
+    m3t:"Құпиясөз құрастырушы", strength:"Қауіпсіздік", show:"Көрсету", hide:"Жасыру", copy:"Көшіру",
+    weak:"Әлсіз", mid:"Орташа", strong:"Күшті", startTip:"Құпиясөз енгізгенде кеңес осында шығады.",
+    tipsOK:"Жарайсың! Құпиясөз күшті.",
+    m4t:"Жасырын сөз", errors:(x)=>`Қате: ${x} / 6`, newWord:"Жаңа сөз",
+    m5t:"Пазл 3×3", pzhint:"Плиткаларды жылжытып, суретті жина.", shuffle:"Араластыр",
+    okAll:"Жарайсың!"
+  }
+};
+let lang = localStorage.getItem('lang') || 'ru';
+const $ = s=>document.querySelector(s);
+
+/* ---------- Переключение языка ---------- */
+function applyLang(){
+  $('#brand').textContent=L[lang].brand;
+  $('#hTitle').textContent=L[lang].title;
+  $('#hDesc').textContent=L[lang].desc;
+
+  $('#g1t').textContent=L[lang].g1t; $('#g1d').textContent=L[lang].g1d; $('#g1b').textContent=L[lang].g1b;
+  $('#g2t').textContent=L[lang].g2t; $('#g2d').textContent=L[lang].g2d; $('#g2b').textContent=L[lang].g2b;
+  $('#g3t').textContent=L[lang].g3t; $('#g3d').textContent=L[lang].g3d; $('#g3b').textContent=L[lang].g3b;
+  $('#g4t').textContent=L[lang].g4t; $('#g4d').textContent=L[lang].g4d; $('#g4b').textContent=L[lang].g4b;
+  $('#g5t').textContent=L[lang].g5t; $('#g5d').textContent=L[lang].g5d; $('#g5b').textContent=L[lang].g5b;
+
+  // модалки
+  $('#m1t').textContent=L[lang].m1t; $('#m1hint').textContent=L[lang].m1hint; $('#m1wordname').textContent=L[lang].m1word;
+  $('#m2t').textContent=L[lang].m2t; $('#m2clueTitle').textContent=L[lang].clue; $('#m2hint').textContent=L[lang].m2hint;
+  $('#m3t').textContent=L[lang].m3t; $('#strTitle').textContent=L[lang].strength; $('#m5hint').textContent=L[lang].pzhint;
+  $('#hStat').textContent=L[lang].errors(hErrors); $('#hNext').textContent=L[lang].newWord; $('#pzShuffle').textContent=L[lang].shuffle;
+
+  // кнопки RU/KZ
+  document.getElementById('btnRU').classList.toggle('active', lang==='ru');
+  document.getElementById('btnKZ').classList.toggle('active', lang==='kz');
+
+  // тексты для кнопок показа/копирования
+  document.getElementById('eye').textContent = showPwd ? L[lang].hide : L[lang].show;
+  document.getElementById('copyBtn').textContent = L[lang].copy;
+  document.getElementById('m3rules').textContent = L[lang].startTip;
+}
+document.getElementById('btnRU').onclick=()=>{lang='ru';localStorage.setItem('lang','ru');applyLang();resetAll();}
+document.getElementById('btnKZ').onclick=()=>{lang='kz';localStorage.setItem('lang','kz');applyLang();resetAll();}
+
+/* ---------- Открытие/закрытие модалок ---------- */
+document.querySelectorAll('[data-open]').forEach(b=>{
+  b.addEventListener('click',()=>document.querySelector(b.dataset.open).classList.add('open'));
+});
+document.querySelectorAll('[data-close]').forEach(b=>{
+  b.addEventListener('click',()=>b.closest('.modal').classList.remove('open'));
+});
+document.querySelectorAll('.modal').forEach(m=>{
+  m.addEventListener('click',e=>{ if(e.target===m) m.classList.remove('open'); });
+});
+
+/* ---------- Игра 1: Слова из букв ---------- */
+const WORDS_RU = [
+  {w:'ПАРОЛЬ', clue:'Секрет для входа'},
+  {w:'ФИШИНГ', clue:'Обманные письма'},
+  {w:'ДАННЫЕ', clue:'Информация о человеке'},
+  {w:'СЕТЬ', clue:'Интернет — это…'},
+  {w:'АНТИВИРУС', clue:'Защита компьютера'}
+];
+const WORDS_KZ = [
+  {w:'ҚҰПИЯСӨЗ', clue:'Кіру құпиясы'},
+  {w:'ФИШИНГ', clue:'Алдамшы хаттар'},
+  {w:'ДЕРЕК', clue:'Адам туралы ақпарат'},
+  {w:'ЖЕЛІ', clue:'Интернет — бұл…'},
+  {w:'АНТИВИРУС', clue:'Компьютерді қорғайды'}
+];
+let anagI=0;
+function buildAnag(){
+  const bank = (lang==='ru')?WORDS_RU:WORDS_KZ;
+  if(anagI>=bank.length) anagI=0;
+  const target=bank[anagI].w; $('#m1target').textContent = bank[anagI].clue;
+  const letters = target.split('');
+  for(let i=letters.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [letters[i],letters[j]]=[letters[j],letters[i]]; }
+  const Ls=$('#letters'), Ss=$('#slots'); Ls.innerHTML=''; Ss.innerHTML='';
+  letters.forEach(ch=>{
+    const el=document.createElement('div'); el.className='letter'; el.textContent=ch; el.draggable=true;
+    el.addEventListener('dragstart',e=>{ e.dataTransfer.setData('text/plain', ch); el.classList.add('drag'); });
+    el.addEventListener('dragend',()=>el.classList.remove('drag'));
+    Ls.appendChild(el);
+  });
+  for(let i=0;i<target.length;i++){
+    const s=document.createElement('div'); s.className='slot'; s.dataset.idx=i;
+    s.addEventListener('dragover',e=>e.preventDefault());
+    s.addEventListener('drop',e=>{
+      e.preventDefault();
+      const src=document.querySelector('.letter.drag'); if(!src) return;
+      if(s.textContent) return;
+      s.textContent=src.textContent; src.remove();
+    });
+    Ss.appendChild(s);
+  }
+  $('#checkAnag').onclick=()=>{
+    const cur=[...document.querySelectorAll('#slots .slot')].map(x=>x.textContent||'_').join('');
+    if(cur===target){ $('#m1hint').textContent = `${L[lang].okAll} (${target})`; $('#m1hint').classList.add('good'); }
+    else{ $('#m1hint').textContent = (lang==='ru')?`Пока не совпало: ${cur}`:`Әлі дұрыс емес: ${cur}`; $('#m1hint').classList.remove('good'); }
+  };
+  $('#nextAnag').onclick=()=>{ anagI++; buildAnag(); $('#m1hint').textContent=L[lang].m1hint; $('#m1hint').classList.remove('good'); };
+}
+
+/* ---------- Игра 2: Угадывание слов ---------- */
+const GUESS_RU = [
+  {w:'ПАРОЛЬ', clue:'Секрет для входа'}, {w:'ФИШИНГ', clue:'Обманные письма'},
+  {w:'ВИРУС', clue:'Вредная программа'}, {w:'СЕТЬ', clue:'Интернет — это…'}, {w:'ПРИВАТНОСТЬ', clue:'Конфиденциальность'}
+];
+const GUESS_KZ = [
+  {w:'ҚҰПИЯСӨЗ', clue:'Кіру құпиясы'}, {w:'ФИШИНГ', clue:'Алдамшы хаттар'},
+  {w:'ВИРУС', clue:'Зиянды бағдарлама'}, {w:'ЖЕЛІ', clue:'Интернет'}, {w:'ҚҰПИЯЛЫЛЫҚ', clue:'Конфиденциалдық'}
+];
+let gI=0, gWord='';
+function buildGuess(){
+  const bank=(lang==='ru')?GUESS_RU:GUESS_KZ;
+  if(gI>=bank.length) gI=0;
+  gWord=bank[gI].w;
+  $('#m2clue').textContent = bank[gI].clue;
+  const cells=$('#m2cells'); cells.innerHTML='';
+  for(let i=0;i<gWord.length;i++){ const c=document.createElement('div'); c.className='cell'; c.textContent='_'; c.dataset.i=i; cells.appendChild(c); }
+  $('#m2hint').textContent = L[lang].m2hint;
+}
+document.getElementById('m2try').onclick=()=>{
+  const inp=document.getElementById('m2input');
+  const ch=(inp.value||'').trim().toUpperCase(); inp.value=''; if(!ch) return;
+  let found=false;
+  for(let i=0;i<gWord.length;i++){
+    const cell=document.querySelector(`#m2cells .cell[data-i="${i}"]`);
+    if(cell.textContent==='_' && gWord[i]===ch){ cell.textContent=ch; found=true; break; }
+  }
+  if(!found){ $('#m2hint').textContent = (lang==='ru')?'Такой буквы нет или уже открыта.':'Мұндай әріп жоқ немесе ашылған.'; }
+  else{
+    const cur=[...document.querySelectorAll('#m2cells .cell')].map(c=>c.textContent).join('');
+    if(cur===gWord){ $('#m2hint').textContent = `${L[lang].okAll} (${gWord})`; }
+  }
+};
+document.getElementById('m2next').onclick=()=>{ gI++; buildGuess(); };
+
+/* ---------- Игра 3: Конструктор пароля (ручной ввод) ---------- */
+const pwd=$('#pwd'), meter=$('#meter'), strText=$('#strText'), hint3=$('#m3hint'), eye=$('#eye');
+let showPwd=false;
+
+pwd.addEventListener('input', ()=> scorePassword(pwd.value));
+eye.addEventListener('click', ()=>{
+  showPwd=!showPwd;
+  pwd.type = showPwd ? 'text':'password';
+  eye.textContent = showPwd ? L[lang].hide : L[lang].show;
+});
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  navigator.clipboard.writeText(pwd.value||'').then(()=>{ hint3.textContent=(lang==='ru')?'Скопировано!':'Көшірілді!'; });
+});
+
+function scorePassword(p){
+  // Простой скорер: длина + разнообразие + запрет популярных шаблонов
+  let score=0;
+  const sets=[/[a-zа-яё]/, /[A-ZА-ЯЁ]/, /[0-9]/, /[^a-zA-Zа-яА-ЯёЁ0-9]/];
+  const has=sets.map(rx=>rx.test(p)).filter(Boolean).length;
+  score += Math.min(20, p.length*1.2);
+  score += has*15;
+  if(/(.)\1\1/.test(p)) score -= 10;
+  if(/(password|qwerty|1234|пароль)/i.test(p)) score = 5;
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  meter.style.width = score+'%';
+  let level=L[lang].weak;
+  if(score>=70) level=L[lang].strong; else if(score>=40) level=L[lang].mid;
+  strText.textContent = level;
+
+  // советы
+  let tips=[];
+  if(!p){ tips.push(L[lang].startTip); }
+  if(p && p.length<12) tips.push((lang==='ru')?'Сделай длиннее (12+).':'Ұзындау қыл (12+).');
+  if(p && !/[A-ZА-ЯЁ]/.test(p)) tips.push((lang==='ru')?'Добавь заглавные буквы.':'Үлкен әріп қос.');
+  if(p && !/[0-9]/.test(p)) tips.push((lang==='ru')?'Добавь цифры.':'Сан қос.');
+  if(p && !/[^a-zA-Zа-яА-ЯёЁ0-9]/.test(p)) tips.push((lang==='ru')?'Добавь символы.':'Таңба қос.');
+  if(p && /(password|qwerty|1234|пароль)/i.test(p)) tips.push((lang==='ru')?'Избегай популярных слов.':'Танымал сөздерді қолданба.');
+  hint3.textContent = tips.length ? tips.join(' ') : L[lang].tipsOK;
+}
+
+/* ---------- Игра 4: Секретное слово ---------- */
+const H_RU=['ПАРОЛЬ','ВИРУС','СЕТЬ','АНТИВИРУС','ФИШИНГ','ПРИВАТНОСТЬ'];
+const H_KZ=['ҚҰПИЯСӨЗ','ВИРУС','ЖЕЛІ','АНТИВИРУС','ФИШИНГ','ҚҰПИЯЛЫЛЫҚ'];
+let hWord='', hOpen=[], hErrors=0;
+const hCells=$('#hCells'), hAlpha=$('#hAlpha');
+
+function buildHang(){
+  const bank=(lang==='ru')?H_RU:H_KZ;
+  hWord=bank[Math.floor(Math.random()*bank.length)];
+  hOpen=Array.from(hWord).map(ch=> (/[A-Za-zА-Яа-яӘәІіҢңҒғҮүҰұҚқӨөЁё]/.test(ch)?'_':ch));
+  hErrors=0;
+  drawHang();
+  const abc = (lang==='ru')
+    ? 'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'
+    : 'АБВГДЕЖЗИЙКЛМНОПРСТУҰҮФХЦЧШЫІЬЭЮЯҚҒҢӨӘЁ';
+  hAlpha.innerHTML='';
+  abc.split('').forEach(ch=>{
+    const b=document.createElement('button'); b.textContent=ch;
+    b.onclick=()=>tryHang(ch,b); hAlpha.appendChild(b);
+  });
+  $('#hStat').textContent=L[lang].errors(hErrors);
+}
+function drawHang(){
+  hCells.innerHTML='';
+  hOpen.forEach(ch=>{ const c=document.createElement('div'); c.className='cell'; c.textContent=ch; hCells.appendChild(c); });
+}
+function tryHang(ch,btn){
+  btn.disabled=true;
+  let ok=false;
+  for(let i=0;i<hWord.length;i++){
+    if(hWord[i]===ch && hOpen[i]==='_'){ hOpen[i]=ch; ok=true; }
+  }
+  if(!ok){ hErrors++; }
+  drawHang();
+  $('#hStat').textContent=L[lang].errors(hErrors);
+  if(hOpen.join('')===hWord){
+    $('#hStat').textContent = (lang==='ru')?`Ура! Слово: ${hWord}`:`Жарайсың! Сөз: ${hWord}`;
+    hAlpha.querySelectorAll('button').forEach(b=>b.disabled=true);
+  }else if(hErrors>=6){
+    $('#hStat').textContent = (lang==='ru')?`Увы! Это было: ${hWord}`:`Өкінішті! Бұл: ${hWord}`;
+    hAlpha.querySelectorAll('button').forEach(b=>b.disabled=true);
+  }
+}
+document.getElementById('hNext').onclick=buildHang;
+
+/* ---------- Игра 5: Пазл 3×3 (с картинкой) ---------- */
+const puzzle=$('#puzzle');
+let tiles=[1,2,3,4,5,6,7,8,0]; // 0 — пусто
+
+function drawPuzzle(){
+  puzzle.innerHTML='';
+  tiles.forEach((v,i)=>{
+    const d=document.createElement('div');
+    d.className='tile';
+    if(v===0){ d.classList.add('empty'); }
+    else{
+      // координата фрагмента (v-1) в сетке 3×3
+      const idx=v-1, r=Math.floor(idx/3), c=idx%3;
+      d.style.backgroundImage = `url('${PUZZLE_IMG}')`;
+      d.style.backgroundPosition = `${-c*110}px ${-r*110}px`;
+    }
+    d.onclick=()=>moveTile(i);
+    puzzle.appendChild(d);
+  });
+}
+function neighbors(i){
+  const n=[]; const r=Math.floor(i/3), c=i%3;
+  if(r>0)n.push(i-3); if(r<2)n.push(i+3); if(c>0)n.push(i-1); if(c<2)n.push(i+1);
+  return n;
+}
+function moveTile(i){
+  const e=tiles.indexOf(0);
+  if(neighbors(i).includes(e)){ [tiles[i],tiles[e]]=[tiles[e],tiles[i]]; drawPuzzle(); checkSolved(); }
+}
+function shufflePuzzle(){
+  for(let k=0;k<200;k++){ const e=tiles.indexOf(0); const ns=neighbors(e); const pick=ns[Math.floor(Math.random()*ns.length)]; [tiles[e],tiles[pick]]=[tiles[pick],tiles[e]]; }
+  drawPuzzle();
+}
+function checkSolved(){
+  const solved = tiles.join(',')==='1,2,3,4,5,6,7,8,0';
+  if(solved){ $('#m5hint').textContent = (lang==='ru')?`${L[lang].okAll}!`:`${L[lang].okAll}!`; }
+}
+document.getElementById('pzShuffle').onclick=shufflePuzzle;
+
+/* ---------- Сброс и запуск ---------- */
+function resetAll(){
+  anagI=0; buildAnag();
+  gI=0; buildGuess();
+  scorePassword(''); // очистить индикатор конструктора
+  buildHang();
+  tiles=[1,2,3,4,5,6,7,8,0]; shufflePuzzle();
+}
+applyLang();
+resetAll();
+</script>
+</body>
+</html>

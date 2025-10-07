@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Проверь себя — Викторина по кибербезопасности</title>
+<style>
+  :root{
+    --ink:#0f172a; --muted:#475569; --brand:#0ea5e9; --ok:#16a34a; --bad:#dc2626;
+    --card:#ffffff; --line:#e2e8f0; --shadow:0 8px 22px rgba(15,23,42,.08);
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,Segoe UI,Arial,sans-serif;background:#f6fbff;color:var(--ink)}
+  .wrap{max-width:900px;margin:0 auto;padding:18px}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:8px}
+  a.back{text-decoration:none;color:var(--brand);font-weight:800}
+  .brand{font-weight:900;font-size:18px}
+  .lang{display:flex;gap:8px}
+  .lang button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-weight:800;cursor:pointer}
+  .lang button.active{background:var(--brand);color:#fff;border-color:#0ea5e9}
+
+  .hero{text-align:center;margin:8px 0 16px}
+  .hero h1{margin:0 0 8px;color:#0b3d91;font-size:clamp(22px,4.8vw,30px)}
+  .hero p{margin:0;color:var(--muted)}
+
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+  .toprow{display:flex;gap:12px;align-items:center;margin-bottom:12px}
+  .progress{flex:1;height:10px;background:#eaf4fb;border-radius:999px;overflow:hidden}
+  .bar{height:100%;width:0;background:linear-gradient(90deg,#0ea5e9,#38bdf8)}
+  .counter{font-weight:800;min-width:110px;text-align:right}
+
+  .qtext{font-weight:900;margin:4px 0 10px;font-size:18px}
+  .answers{display:grid;gap:10px}
+  .answers button{
+    text-align:left;padding:12px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font-weight:700;
+    transition:.15s ease; box-shadow:0 3px 10px rgba(0,0,0,.04)
+  }
+  .answers button:hover{background:#f0f9ff}
+  .answers button.correct{background:#d1fae5;border-color:#16a34a}
+  .answers button.wrong{background:#fee2e2;border-color:#dc2626}
+  .answers button.disabled{pointer-events:none;opacity:.9}
+
+  .tip{margin:10px 0 0;color:#334155;display:none}
+  .tip.ok{color:#166534}
+  .tip.bad{color:#991b1b}
+
+  .actions{display:flex;justify-content:space-between;align-items:center;margin-top:14px;gap:10px}
+  .score{font-weight:900;color:#0b3d91}
+  .btn{border:1px solid var(--brand);background:var(--brand);color:#fff;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  .final{display:none;text-align:center;padding:20px}
+  .big{font-size:40px;margin:0}
+  .final p{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./index.html">⬅ Главная</a>
+    <div class="brand" id="brand">🧠 Проверь себя</div>
+    <div class="lang" role="group" aria-label="Переключение языка">
+      <button id="btnRU" class="active">Русский</button>
+      <button id="btnKZ">Қазақша</button>
+    </div>
+  </header>
+
+  <section class="hero">
+    <h1 id="title">Викторина по кибербезопасности</h1>
+    <p id="desc">Выбирай ответы, смотри подсказки и доберись до конца!</p>
+  </section>
+
+  <section class="card" id="quizCard" aria-live="polite">
+    <div class="toprow">
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="counter" id="counter">1 / 10</div>
+    </div>
+
+    <div class="qtext" id="qtext">…</div>
+    <div class="answers" id="answers"></div>
+    <div class="tip" id="tip"></div>
+
+    <div class="actions">
+      <div class="score" id="score">0 ✅</div>
+      <button class="btn" id="nextBtn" disabled>Дальше →</button>
+    </div>
+  </section>
+
+  <section class="final" id="finalCard">
+    <h2 class="big" id="finalTitle">🎉 Молодец!</h2>
+    <p id="finalText">Твой результат: 0 из 10</p>
+    <button class="btn" id="restartBtn">Сыграть ещё раз</button>
+  </section>
+</div>
+
+<script>
+/* ----------- ВОПРОСЫ (10 RU / 10 KZ) ----------- */
+const BANK = {
+  ru: [
+    { q:"Что считается надёжным паролем?",
+      a:["123456","Nurzhan2009","Слон_идёт_по_снегу!27"], c:2,
+      tipOk:"Верно! Длинная фраза + символы — надёжно.",
+      tipBad:"Подсказка: длинный пароль с символами, без личных данных." },
+    { q:"Фишинг — это…",
+      a:["Игра","Обман через письма и ссылки","Защита данных"], c:1,
+      tipOk:"Да! Не кликай по странным ссылкам.",
+      tipBad:"Подсказка: фишинг — попытка выманить данные." },
+    { q:"Какую информацию нельзя публиковать в сети?",
+      a:["Адрес и телефон","Любимые игры","Школьные предметы"], c:0,
+      tipOk:"Правильно. Личные данные держим в тайне.",
+      tipBad:"Подсказка: личные данные — нельзя." },
+    { q:"Игра просит доступ к контактам. Что сделать?",
+      a:["Разрешить всё","Разрешить только нужное или отказаться","Это обязательно"], c:1,
+      tipOk:"Верно: минимум разрешений.",
+      tipBad:"Подсказка: давай только действительно нужные доступы." },
+    { q:"Кибербуллинг — это…",
+      a:["Шутка между друзьями","Оскорбления и травля в сети","Смешной мем"], c:1,
+      tipOk:"Верно. Обратись к взрослым, сохрани доказательства.",
+      tipBad:"Подсказка: это травля и оскорбления в интернете." },
+    { q:"Сколько времени подряд рекомендуется работать за ПК?",
+      a:["30–40 мин с перерывом","2 часа без перерыва","Сколько хочешь"], c:0,
+      tipOk:"Отлично! Перерыв для глаз и спины обязателен.",
+      tipBad:"Подсказка: делай перерыв каждые ~30–40 минут." },
+    { q:"Что делать в открытом Wi-Fi (кафе, метро)?",
+      a:["Вводить пароли — это безопасно","Избегать ввода паролей и важного","Отправлять паспортные данные"], c:1,
+      tipOk:"Верно. В общедоступных сетях лучше не вводить важные данные.",
+      tipBad:"Подсказка: открытый Wi-Fi небезопасен для секретов." },
+    { q:"Что такое двухфакторная аутентификация (2FA)?",
+      a:["Вход только по паролю","Пароль + доп. код/подтверждение","Смена пароля каждый день"], c:1,
+      tipOk:"Да! Пароль + код из SMS/приложения — намного безопаснее.",
+      tipBad:"Подсказка: 2FA — дополнительная проверка при входе." },
+    { q:"Что делать, если пришло странное письмо «Вы выиграли…»?",
+      a:["Сразу перейти по ссылке","Ответить и отправить данные","Игнорировать/показать взрослым"], c:2,
+      tipOk:"Правильно! Не ведись на обещания призов.",
+      tipBad:"Подсказка: это часто ловушка — фишинг." },
+    { q:"Можно ли использовать один и тот же пароль везде?",
+      a:["Да, так проще","Нет, лучше разные пароли","Можно, если короткий"], c:1,
+      tipOk:"Верно. Один пароль на всё — рискованно.",
+      tipBad:"Подсказка: разные пароли снижают последствия взлома." }
+  ],
+  kz: [
+    { q:"Қай құпиясөз қауіпсіз?",
+      a:["123456","Nurzhan2009","Піл_қармен_жүр!27"], c:2,
+      tipOk:"Дұрыс! Ұзын сөз тіркесі + таңбалар — қауіпсіз.",
+      tipBad:"Кеңес: ұзын, күрделі әрі жеке деректерсіз болсын." },
+    { q:"Фишинг дегеніміз…",
+      a:["Ойын","Хаттар мен сілтемелер арқылы алдау","Деректерді қорғау"], c:1,
+      tipOk:"Иә! Күдікті сілтемелерді баспа.",
+      tipBad:"Кеңес: фишинг — деректерді алдап алу." },
+    { q:"Желіде қандай ақпаратты жариялауға болмайды?",
+      a:["Мекенжай мен телефон","Сүйікті ойындар","Пәндер"], c:0,
+      tipOk:"Дұрыс. Жеке деректерді құпия ұста.",
+      tipBad:"Кеңес: жеке деректерді жариялама." },
+    { q:"Ойын контактілерге рұқсат сұрады. Не істеу керек?",
+      a:["Бәріне рұқсат беру","Тек қажеттісіне рұқсат немесе бас тарту","Бұл міндетті"], c:1,
+      tipOk:"Дұрыс: тек ең керегін бер.",
+      tipBad:"Кеңес: қажетсіз рұқсаттарды берме." },
+    { q:"Кибербуллинг — бұл…",
+      a:["Әзіл","Желіде қорлау және қысым жасау","Мем"], c:1,
+      tipOk:"Дұрыс. Ересекке айт, дәлелді сақта.",
+      tipBad:"Кеңес: бұл интернеттегі қорлау мен қудалау." },
+    { q:"Компьютер алдында үзіліссіз қанша уақыт отыру ұсынылады?",
+      a:["30–40 мин, содан соң үзіліс","2 сағат үзіліссіз","Шексіз"], c:0,
+      tipOk:"Тамаша! Үзіліс көз бен арқа үшін керек.",
+      tipBad:"Кеңес: әр 30–40 минут сайын демалыс жаса." },
+    { q:"Қоғамдық Wi-Fi желісінде не дұрыс?",
+      a:["Құпиясөздерді енгізу қауіпсіз","Маңызды деректерді енгізбеу жөн","Паспорт деректерін жіберу"], c:1,
+      tipOk:"Дұрыс. Ашық желілерде құпияны енгізбе.",
+      tipBad:"Кеңес: ашық Wi-Fi — қауіп төндіруі мүмкін." },
+    { q:"Екі факторлы аутентификация (2FA) деген не?",
+      a:["Тек парольмен кіру","Пароль + қосымша код/растау","Күн сайын пароль ауыстыру"], c:1,
+      tipOk:"Иә! Пароль + код қауіпсіздікті арттырады.",
+      tipBad:"Кеңес: 2FA — кіргенде қосымша тексеріс." },
+    { q:"«Сіз сыйлық ұттыңыз!» деген хат келді. Не істеу керек?",
+      a:["Сілтемені бірден ашу","Жауап беріп, дерек жіберу","Елемеу/ересекке көрсету"], c:2,
+      tipOk:"Дұрыс! Мұндай хаттар көбіне алдау.",
+      tipBad:"Кеңес: бұл жиі — фишинг." },
+    { q:"Бір құпиясөзді барлық жерде қолдануға бола ма?",
+      a:["Иә, ыңғайлы","Жоқ, әр қызметке бөлек болғаны жақсы","Иә, қысқа болса болады"], c:1,
+      tipOk:"Дұрыс. Бір пароль — үлкен қауіп.",
+      tipBad:"Кеңес: әр сервисте әртүрлі пароль қолдан." }
+  ]
+};
+
+/* --------------- ЛОГИКА ВИКТОРИНЫ --------------- */
+let lang = localStorage.getItem('lang') || 'ru';
+const els = {
+  brand: document.getElementById('brand'),
+  title: document.getElementById('title'),
+  desc: document.getElementById('desc'),
+  btnRU: document.getElementById('btnRU'),
+  btnKZ: document.getElementById('btnKZ'),
+  bar: document.getElementById('bar'),
+  counter: document.getElementById('counter'),
+  qtext: document.getElementById('qtext'),
+  answers: document.getElementById('answers'),
+  tip: document.getElementById('tip'),
+  next: document.getElementById('nextBtn'),
+  score: document.getElementById('score'),
+  quizCard: document.getElementById('quizCard'),
+  finalCard: document.getElementById('finalCard'),
+  finalTitle: document.getElementById('finalTitle'),
+  finalText: document.getElementById('finalText'),
+  restart: document.getElementById('restartBtn')
+};
+
+function t(key){
+  const dict = {
+    brand:{ru:"🧠 Проверь себя", kz:"🧠 Өзіңді тексер"},
+    h1:{ru:"Викторина по кибербезопасности", kz:"Киберқауіпсіздік викторинасы"},
+    p:{ru:"Выбирай ответы, смотри подсказки и доберись до конца!",
+       kz:"Жауап бер, кеңесті оқы және соңына дейін жет!"},
+    next:{ru:"Дальше →", kz:"Келесі →"},
+    score:{ru:"✅ Правильных: ", kz:"✅ Дұрыс жауап: "},
+    again:{ru:"Сыграть ещё раз", kz:"Қайта ойнау"},
+    done:{ru:"Готово!", kz:"Дайын!"},
+    result:{ru:"Твой результат: {X} из {N}", kz:"Нәтижең: {X} / {N}"}
+  };
+  return dict[key][lang];
+}
+
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j = (Math.random()*(i+1))|0;
+    [arr[i],arr[j]] = [arr[j],arr[i]];
+  }
+  return arr;
+}
+
+let deck=[], index=0, points=0;
+
+function start(){
+  els.brand.textContent = t('brand');
+  els.title.textContent = t('h1');
+  els.desc.textContent  = t('p');
+  els.next.textContent  = t('next');
+  els.restart.textContent = t('again');
+  els.btnRU.classList.toggle('active', lang==='ru');
+  els.btnKZ.classList.toggle('active', lang==='kz');
+
+  deck = BANK[lang].map(q=>({
+    q:q.q, tipOk:q.tipOk, tipBad:q.tipBad, c:q.c,
+    a:q.a.map((txt,idx)=>({text:txt, idx}))
+  }));
+  shuffle(deck).forEach(q=>shuffle(q.a));
+
+  index=0; points=0;
+  els.score.textContent = t('score') + points;
+  els.finalCard.style.display='none';
+  els.quizCard.style.display='block';
+  renderQ();
+}
+
+function renderQ(){
+  const N = deck.length, cur = deck[index];
+  els.qtext.textContent = `${index+1}. ${cur.q}`;
+  els.answers.innerHTML = '';
+  els.tip.style.display='none'; els.tip.textContent='';
+  els.next.disabled = true;
+
+  els.counter.textContent = `${index+1} / ${N}`;
+  els.bar.style.width = `${(index/N)*100}%`;
+
+  cur.a.forEach((opt)=>{
+    const b = document.createElement('button');
+    b.textContent = opt.text;
+    b.addEventListener('click',()=>{
+      [...els.answers.children].forEach(x=>x.classList.add('disabled'));
+
+      const ok = (opt.idx === cur.c);
+      if(ok){
+        b.classList.add('correct');
+        els.tip.className='tip ok';
+        els.tip.textContent = cur.tipOk;
+        points++;
+        els.score.textContent = t('score') + points;
+      }else{
+        b.classList.add('wrong');
+        els.tip.className='tip bad';
+        els.tip.textContent = cur.tipBad;
+        // подсветим верный
+        [...els.answers.children].forEach(x=>{
+          const wasIdx = cur.a[[...els.answers.children].indexOf(x)].idx;
+          if(wasIdx===cur.c) x.classList.add('correct');
+        });
+      }
+      els.tip.style.display='block';
+      els.next.disabled=false;
+      els.bar.style.width = `${((index+1)/N)*100}%`;
+    });
+    els.answers.appendChild(b);
+  });
+}
+
+els.next.addEventListener('click', ()=>{
+  index++;
+  if(index >= deck.length){
+    els.quizCard.style.display='none';
+    els.finalCard.style.display='block';
+    els.finalTitle.textContent = t('done');
+    els.finalText.textContent = t('result')
+      .replace('{X}', String(points))
+      .replace('{N}', String(deck.length));
+  }else{
+    renderQ();
+  }
+});
+
+els.restart.addEventListener('click', start);
+
+document.getElementById('btnRU').addEventListener('click', ()=>{ lang='ru'; localStorage.setItem('lang','ru'); start(); });
+document.getElementById('btnKZ').addEventListener('click', ()=>{ lang='kz'; localStorage.setItem('lang','kz'); start(); });
+
+start();
+</script>
+</body>
+</html>
